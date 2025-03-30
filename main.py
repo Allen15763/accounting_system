@@ -23,8 +23,6 @@ def main():
     # 創建應用程式
     app = QApplication(sys.argv)
     app.setApplicationName("會計底稿處理系統")
-    # app.setWindowIcon(QIcon("assets/icons/app_icon.png"))
-    # 設置應用程序圖標
     app.setWindowIcon(QIcon("assets/icons/app_icon.ico"))
     
     # 加載暗色系樣式表

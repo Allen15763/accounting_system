@@ -130,6 +130,20 @@ class DatabaseManager:
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
         ''')
+
+        # 添加 task_steps 表格的創建語句
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS task_steps (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id INTEGER,
+            order_num INTEGER,
+            name TEXT,
+            description TEXT,
+            status TEXT DEFAULT 'pending',
+            duration TEXT,
+            FOREIGN KEY(task_id) REFERENCES tasks(id)
+        )
+        ''')
         
         # 創建結果表
         cursor.execute('''

@@ -41,29 +41,32 @@ class FileUploadWidget(QWidget):
         upload_area = QFrame()
         upload_area.setObjectName("upload-area")
         upload_area.setMinimumHeight(200)
-        upload_area.setStyleSheet("border: 2px dashed #ddd; border-radius: 5px; padding: 20px;")
+        upload_area.setStyleSheet("border: 2px dashed #45475a; border-radius: 5px; padding: 20px;")
         upload_area_layout = QVBoxLayout(upload_area)
-        
+
         upload_icon = QLabel("📂")
         upload_icon.setAlignment(Qt.AlignCenter)
-        upload_icon.setStyleSheet("font-size: 48px; color: #3498db;")
-        
+        upload_icon.setStyleSheet("font-size: 48px; color: #89b4fa;")
+
         upload_text = QLabel("將文件拖放到此處或點擊上傳")
         upload_text.setAlignment(Qt.AlignCenter)
         upload_text.setStyleSheet("font-size: 16px; margin-top: 10px;")
-        
+
         upload_desc = QLabel("支持格式: Excel (.xlsx, .xls), CSV (.csv), PDF (.pdf)")
         upload_desc.setAlignment(Qt.AlignCenter)
-        upload_desc.setStyleSheet("color: #95a5a6; margin-top: 5px;")
-        
+        upload_desc.setStyleSheet("color: #a6adc8; margin-top: 5px;")
+
+        # 這裡添加一個明顯的上傳按鈕
         browse_button = QPushButton("選擇文件")
+        browse_button.setStyleSheet("background-color: #89b4fa; color: #1e1e2e; font-weight: bold;")
+        browse_button.setMinimumHeight(40)  # 增加按鈕高度
         browse_button.clicked.connect(self.browse_file)
-        
+
         upload_area_layout.addWidget(upload_icon)
         upload_area_layout.addWidget(upload_text)
         upload_area_layout.addWidget(upload_desc)
         upload_area_layout.addWidget(browse_button, alignment=Qt.AlignCenter)
-        
+
         upload_layout.addWidget(upload_area)
         
         # 文件信息表單
@@ -135,13 +138,15 @@ class FileUploadWidget(QWidget):
         
         # 上傳按鈕
         button_layout = QHBoxLayout()
-        button_layout.addStretch()
+        # button_layout.addStretch()
         self.upload_button = QPushButton("上傳並處理")
         self.upload_button.setObjectName("btn-success")
+        self.upload_button.setStyleSheet("background-color: #a6e3a1; color: #1e1e2e; font-weight: bold; padding: 10px 20px;")
+        self.upload_button.setMinimumHeight(40)  # 增加按鈕高度
+        self.upload_button.setMinimumWidth(150)  # 增加按鈕寬度
         self.upload_button.clicked.connect(self.upload_file)
         self.upload_button.setEnabled(False)  # 禁用直到選擇文件
         button_layout.addWidget(self.upload_button)
-        form_layout.addLayout(button_layout)
         
         upload_layout.addLayout(form_layout)
         layout.addWidget(upload_frame)
@@ -177,12 +182,14 @@ class FileUploadWidget(QWidget):
             self, "選擇文件", "", 
             "Excel文件 (*.xlsx *.xls);;CSV文件 (*.csv);;PDF文件 (*.pdf);;所有文件 (*.*)"
         )
-        
+        print(file_path)
         if file_path:
             self.selected_file_path = file_path
             file_name = os.path.basename(file_path)
             self.filename_edit.setText(file_name)
             self.upload_button.setEnabled(True)
+            self.upload_button.setVisible(True)
+            print(self.filename_edit.text())
             
             # 根據文件類型自動選擇類別
             extension = os.path.splitext(file_name)[1].lower()
@@ -320,3 +327,34 @@ class FileUploadWidget(QWidget):
             self.records_table.setItem(row, 4, QTableWidgetItem("查看/刪除"))
         
         conn.close()
+
+    def dragEnterEvent(self, event):
+        """拖拽文件進入事件"""
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+            self.findChild(QFrame, "upload-area").setStyleSheet("border: 2px dashed #89b4fa; border-radius: 5px; padding: 20px;")
+
+    def dragLeaveEvent(self, event):
+        """拖拽文件離開事件"""
+        self.findChild(QFrame, "upload-area").setStyleSheet("border: 2px dashed #45475a; border-radius: 5px; padding: 20px;")
+
+    def dropEvent(self, event):
+        """文件拖放事件"""
+        if event.mimeData().hasUrls():
+            self.findChild(QFrame, "upload-area").setStyleSheet("border: 2px dashed #45475a; border-radius: 5px; padding: 20px;")
+            url = event.mimeData().urls()[0]
+            file_path = url.toLocalFile()
+            if file_path:
+                self.selected_file_path = file_path
+                file_name = os.path.basename(file_path)
+                self.filename_edit.setText(file_name)
+                self.upload_button.setEnabled(True)
+                
+                # 根據文件類型自動選擇類別
+                extension = os.path.splitext(file_name)[1].lower()
+                if extension in ['.xlsx', '.xls']:
+                    self.category_combo.setCurrentText("財務報表")
+                elif extension == '.csv':
+                    self.category_combo.setCurrentText("預算分析")
+                elif extension == '.pdf':
+                    self.category_combo.setCurrentText("其他")
